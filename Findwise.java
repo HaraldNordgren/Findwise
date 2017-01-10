@@ -3,12 +3,11 @@ import java.util.*;
 
 public class Findwise {
     public static void main(String[] args) {
-        String[] documents = {
-            "the brown fox jumped over the brown dog",
-            "the lazy brown dog sat in the corner",
-            "the red fox bit the lazy dog",
-        };
-        //System.out.println(Arrays.toString(documents));
+        
+        Map<String, String> documents = new HashMap<String, String>();
+        documents.put("document 1", "the brown fox jumped over the brown dog");
+        documents.put("document 2", "the lazy brown dog sat in the corner");
+        documents.put("document 3", "the red fox bit the lazy dog");
 
         if (args.length < 1) {
             System.err.println("Please provide a search query!");
@@ -16,31 +15,47 @@ public class Findwise {
         }
 
         String query = args[0];
-        //System.out.println(query);
 
-        /*StringTokenizer st = new StringTokenizer(documents[0]);
-        while (st.hasMoreTokens()) {
-            System.out.println(st.nextToken());
-        }*/
+        HashMap<String, TreeMap<String, Integer>> reversed_index = new HashMap<>();
 
-        HashMap<String, Integer> map = new HashMap<>();
+        for (String document_key : documents.keySet()) {
 
-        for (String document : documents) {
-            //System.out.println(document);
-
-            StringTokenizer st = new StringTokenizer(document);
+            String document_text = documents.get(document_key);
+            StringTokenizer st = new StringTokenizer(document_text);
+            
             while (st.hasMoreTokens()) {
-                //System.out.println(st.nextToken());
                 String word = st.nextToken();
-                Integer freq = map.get(word);
-                map.put(word, (freq == null) ? 1 : freq + 1);
+                TreeMap<String, Integer> document_occurences = reversed_index.get(word);
+
+                if (document_occurences == null) {
+                    TreeMap<String, Integer> occurence_map = new TreeMap<>();
+                    occurence_map.put(document_key, 1);
+                    reversed_index.put(word, occurence_map);
+                    //System.out.println(word + ": " + document_key + ", 1");
+                    continue;
+                }
+                
+                Integer freq = document_occurences.get(document_key);
+
+                if (freq == null) {
+                    document_occurences.put(document_key, 1);
+                    //System.out.println(word + ": " + document_key + ", 1");
+                    continue;
+                }
+
+                document_occurences.put(document_key, freq + 1);
+                //System.out.println(word + ": " + document_key + ", " + (freq + 1));
             }
         }
 
-        for (String name: map.keySet()){
-            String key = name.toString();
-            String value = map.get(name).toString();  
-            System.out.println(key + " " + value);
+        TreeMap<String, Integer> document_occurences = reversed_index.get(query);
+        Set<String> result;
+
+        if (document_occurences == null) {
+            System.out.println("<No results>");
+        } else {
+            result = document_occurences.keySet();
+            System.out.println(result);
         }
    }
 }
