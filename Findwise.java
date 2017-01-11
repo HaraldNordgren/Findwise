@@ -4,6 +4,7 @@ import java.lang.Math.*;
 
 public class Findwise {
 
+    // Ripped from some Stackoverflow answer
     static <K,V extends Comparable<? super V>>
     SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
         SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<Map.Entry<K,V>>(
@@ -20,15 +21,22 @@ public class Findwise {
 
     public static void main(String[] args) {
         
+        if (args.length == 0) {
+            System.err.println("Please provide a search query!");
+            System.exit(1);
+        }
+
         Map<String, String> documents = new HashMap<>();
         documents.put("document 1", "the brown fox jumped over the brown dog");
         documents.put("document 2", "the lazy brown dog sat in the corner");
         documents.put("document 3", "the red fox bit the lazy dog");
         //documents.put("document 4", "brown brown brown");
 
-        if (args.length == 0) {
-            System.err.println("Please provide a search query!");
-            System.exit(1);
+        double total_documents = documents.size();
+
+        Map<String, Integer> words_per_document = new HashMap<>();
+        for (String key : documents.keySet()) {
+            words_per_document.put(key, 0);
         }
 
         HashMap<String, TreeMap<String, Integer>> reversed_index = new HashMap<>();
@@ -37,9 +45,13 @@ public class Findwise {
 
             String document_text = documents.get(document_key);
             StringTokenizer st = new StringTokenizer(document_text);
+
+            int token_counter = 0;
             
             while (st.hasMoreTokens()) {
                 String word = st.nextToken();
+                token_counter++;
+
                 TreeMap<String, Integer> document_occurences = reversed_index.get(word);
 
                 if (document_occurences == null) {
@@ -61,17 +73,13 @@ public class Findwise {
                 document_occurences.put(document_key, freq + 1);
                 //System.out.println(word + ": " + document_key + ", " + (freq + 1));
             }
+
+            words_per_document.put(document_key, token_counter);
         }
 
-        double total_documents = documents.size();
-
         TreeMap<String, Double> total_tf_ids = new TreeMap<>();
-        /*for (String key : documents.keySet()) {
-            total_tf_ids.put(key, 0.);
-        }*/
 
         for (String query_string : args) {
-            //System.out.println(query_string);
 
             TreeMap<String, Integer> document_occurences = reversed_index.get(query_string);
             if (document_occurences == null) {
@@ -79,16 +87,27 @@ public class Findwise {
             }
             
             int documents_containing_word = document_occurences.size();
+
+            // IDF is 0
+            if (total_documents == documents_containing_word) {
+                continue;
+            }
+
             double idf = java.lang.Math.log(total_documents / documents_containing_word);
 
             for (String document : document_occurences.keySet()) {
-                int word_occurences = document_occurences.get(document);
+                double word_occurences = document_occurences.get(document);
+                
+                // Division seems to give better results, but puts document 3
+                // before document 1 for "fox", contradicting the specification.
+                double tf = word_occurences / words_per_document.get(document);
+
                 Double tf_id = total_tf_ids.get(document);
-                double current_tf_id = (tf_id != null) ? tf_id : 0.;
-                total_tf_ids.put(document, current_tf_id + word_occurences * idf);
+                double old_tf_id = (tf_id != null) ? tf_id : 0.;
+                
+                total_tf_ids.put(document, old_tf_id + tf * idf);
             }
         }
-
 
         System.out.println(entriesSortedByValues(total_tf_ids));
    }
