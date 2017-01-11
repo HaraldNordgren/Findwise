@@ -22,15 +22,16 @@ public class Findwise {
     public static void main(String[] args) {
         
         if (args.length == 0) {
-            System.err.println("Please provide a search query!");
-            System.exit(1);
+            System.out.println("Search the corpus by specifiying one or more search terms.");
+            System.out.println("Results are ordered by tf–idf.");
+            System.exit(0);
         }
 
         Map<String, String> documents = new HashMap<>();
         documents.put("document 1", "the brown fox jumped over the brown dog");
         documents.put("document 2", "the lazy brown dog sat in the corner");
         documents.put("document 3", "the red fox bit the lazy dog");
-        documents.put("document 4", "brown brown brown");
+        //documents.put("document 4", "brown brown brown");
 
         double total_documents = documents.size();
 
@@ -58,7 +59,6 @@ public class Findwise {
                     TreeMap<String, Integer> occurence_map = new TreeMap<>();
                     occurence_map.put(document_key, 1);
                     reversed_index.put(word, occurence_map);
-                    //System.out.println(word + ": " + document_key + ", 1");
                     continue;
                 }
                 
@@ -66,12 +66,10 @@ public class Findwise {
 
                 if (freq == null) {
                     document_occurences.put(document_key, 1);
-                    //System.out.println(word + ": " + document_key + ", 1");
                     continue;
                 }
 
                 document_occurences.put(document_key, freq + 1);
-                //System.out.println(word + ": " + document_key + ", " + (freq + 1));
             }
 
             words_per_document.put(document_key, token_counter);
@@ -101,6 +99,7 @@ public class Findwise {
                 // Division seems to give better results, but puts document 3
                 // before document 1 for "fox", contradicting the specification.
                 double tf = word_occurences / words_per_document.get(document);
+                //double tf = word_occurences;
 
                 Double tf_id = total_tf_ids.get(document);
                 double old_tf_id = (tf_id != null) ? tf_id : 0.;
@@ -109,6 +108,7 @@ public class Findwise {
             }
         }
 
+        // Outputs documents with td-if values for reference
         //System.out.println(entriesSortedByValues(total_tf_ids));
 
         Vector<String> output = new Vector<>();
