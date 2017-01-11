@@ -30,7 +30,7 @@ public class Findwise {
         documents.put("document 1", "the brown fox jumped over the brown dog");
         documents.put("document 2", "the lazy brown dog sat in the corner");
         documents.put("document 3", "the red fox bit the lazy dog");
-        //documents.put("document 4", "brown brown brown");
+        documents.put("document 4", "brown brown brown");
 
         double total_documents = documents.size();
 
@@ -109,6 +109,14 @@ public class Findwise {
             }
         }
 
-        System.out.println(entriesSortedByValues(total_tf_ids));
+        //System.out.println(entriesSortedByValues(total_tf_ids));
+
+        Vector<String> output = new Vector<>();
+
+        for (Map.Entry<String, Double> entry : entriesSortedByValues(total_tf_ids)) {
+            output.add(entry.getKey());
+        }
+
+        System.out.println(output);
    }
 }
